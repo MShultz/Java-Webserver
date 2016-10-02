@@ -1,42 +1,35 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class RequestHandler implements Runnable {
 	String request;
 	Server serv;
+	String responseHeader;
 
 	public RequestHandler(String request, Server serv) {
 		this.request = request;
 		this.serv = serv;
+		responseHeader = "HTTP/1.0 200 OK\r\n";
 	}
 
 	@Override
 	public void run() {
-		serv.respond(parseRequest());
+		serv.respond(responseHeader, parseRequest());
 	}
 
-	private String parseRequest() {
+	private byte[] parseRequest() {
 		return getResponse(request.substring(request.indexOf(" "), request.lastIndexOf(" ")).trim());
 	}
 
-	private String getResponse(String pageRequested) {
-		String response = "HTTP/1.0 200 OK\r\n\r\n";
+	private byte[] getResponse(String pageRequested) {
+		byte[] response = null; 
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader("src/My Website" + pageRequested));
-			while (reader.ready()) {
-				response += reader.readLine() + "\n";
-			}
-			reader.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("Error: File Not Found.");
-			e.printStackTrace();
+			response = Files.readAllBytes(Paths.get("src/My Website" + pageRequested));			
 		} catch (IOException e) {
-			System.out.println("Error: Something went wrong.");
-			e.printStackTrace();
+			responseHeader = "HTTP/1.0 404 Not Found\r\n\r\n";
 		}
-		System.out.println(response);
+			
 		return response;
 	}
 
