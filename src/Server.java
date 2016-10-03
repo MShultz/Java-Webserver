@@ -44,6 +44,7 @@ public class Server {
 	public synchronized void respond(String headResponse, byte[] response) {
 		try {
 			DataOutputStream dout = new DataOutputStream(clientSocket.getOutputStream());
+			System.out.println(headResponse);
 			dout.writeBytes(headResponse);
 			if (!headResponse.contains("404")) {
 				dout.writeBytes("Content-Length: " + response.length + "\r\n\r\n");

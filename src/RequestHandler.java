@@ -10,12 +10,12 @@ public class RequestHandler implements Runnable {
 	public RequestHandler(String request, Server serv) {
 		this.request = request;
 		this.serv = serv;
-		responseHeader = "HTTP/1.0 200 OK\r\n";
 	}
 
 	@Override
 	public void run() {
-		serv.respond(responseHeader, parseRequest());
+		byte[] request = parseRequest();
+		serv.respond(responseHeader, request);
 	}
 
 	private byte[] parseRequest() {
@@ -23,14 +23,22 @@ public class RequestHandler implements Runnable {
 	}
 
 	private byte[] getResponse(String pageRequested) {
-		byte[] response = null; 
+		byte[] response = null;
 		try {
-			response = Files.readAllBytes(Paths.get("src/My Website" + pageRequested));			
+			response = Files.readAllBytes(Paths.get("src/My Website" + pageRequested));
 		} catch (IOException e) {
 			responseHeader = "HTTP/1.0 404 Not Found\r\n\r\n";
 		}
-			
+
+		setResponseHeader(response == null);
 		return response;
+	}
+
+	private void setResponseHeader(boolean responseIsNull) {
+		if (responseIsNull)
+			responseHeader = "HTTP/1.0 404 Not Found\r\n\r\n";
+		else
+			responseHeader = "HTTP/1.0 200 OK\r\n";
 	}
 
 }
