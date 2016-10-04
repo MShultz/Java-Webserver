@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -6,16 +7,18 @@ public class RequestHandler implements Runnable {
 	String request;
 	Server serv;
 	String responseHeader;
+	Socket clientSocket;
 
-	public RequestHandler(String request, Server serv) {
+	public RequestHandler(String request, Server serv, Socket clientSocket) {
 		this.request = request;
 		this.serv = serv;
+		this.clientSocket = clientSocket;
 	}
 
 	@Override
 	public void run() {
 		byte[] request = parseRequest();
-		serv.respond(responseHeader, request);
+		serv.respond(responseHeader, request, clientSocket);
 	}
 
 	private byte[] parseRequest() {
@@ -27,7 +30,7 @@ public class RequestHandler implements Runnable {
 		try {
 			response = Files.readAllBytes(Paths.get("src/My Website" + pageRequested));
 		} catch (IOException e) {
-			responseHeader = "HTTP/1.0 404 Not Found\r\n\r\n";
+			responseHeader = "HTTP/1.0 404 Not Found\r\n";
 		}
 
 		setResponseHeader(response == null);
@@ -36,7 +39,7 @@ public class RequestHandler implements Runnable {
 
 	private void setResponseHeader(boolean responseIsNull) {
 		if (responseIsNull)
-			responseHeader = "HTTP/1.0 404 Not Found\r\n\r\n";
+			responseHeader = "HTTP/1.0 404 Not Found\r\n";
 		else
 			responseHeader = "HTTP/1.0 200 OK\r\n";
 	}
